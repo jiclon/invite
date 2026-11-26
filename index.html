@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta property="og:title" content="Погуляем?">
+<meta property="og:description" content="Вечером играем в Mortal Kombat.">
+<title>Погуляем?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600&family=Inter:wght@400;500;600&display=swap">
+<style>
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+[hidden]{display:none!important}
+:root{
+  --night:#0B1220; --card:rgba(255,255,255,.06); --line:rgba(255,255,255,.14);
+  --fg:#F2F5FA; --muted:#9FB0C9; --warm:#F5B553; --warm-soft:rgba(245,181,83,.16);
+  --display:'Unbounded','Segoe UI',Arial,sans-serif; --body:'Inter','Segoe UI',Arial,sans-serif;
+  color-scheme: dark;
+}
+body{
+  background:
+    radial-gradient(90% 60% at 50% -10%, #1C2A47 0%, rgba(28,42,71,0) 60%),
+    radial-gradient(70% 50% at 80% 110%, rgba(245,181,83,.10) 0%, rgba(245,181,83,0) 70%),
+    var(--night);
+  color:var(--fg); font-family:var(--body); font-size:16px; line-height:1.5;
+  display:flex; align-items:center; justify-content:center;
+  padding-left:max(16px, env(safe-area-inset-left,0px));
+  padding-right:max(16px, env(safe-area-inset-right,0px));
+  padding-block:32px; overflow:hidden;
+}
+#snow{position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:0}
+.card{position:relative; z-index:1; width:100%; max-width:440px; background:var(--card); border:1px solid var(--line); border-radius:24px; padding:36px 26px 30px; backdrop-filter:blur(14px); text-align:center; box-shadow:0 24px 60px rgba(0,0,0,.45)}
+.moon{font-size:30px; line-height:1; margin-bottom:14px}
+h1{font-family:var(--display); font-weight:600; font-size:clamp(28px,8vw,38px); margin:0 0 10px; letter-spacing:-.5px; text-wrap:balance}
+.sub{color:var(--muted); margin:0 0 26px; font-size:15.5px; text-wrap:balance}
+.btns{position:relative; display:flex; flex-direction:column; gap:12px; min-height:124px}
+button{font:inherit; font-weight:600; border-radius:14px; cursor:pointer; border:1px solid transparent; padding:15px 20px; transition:transform .12s ease, background .2s ease}
+button:focus-visible{outline:2px solid var(--warm); outline-offset:3px}
+.yes{background:var(--warm); color:#1A1206; font-size:17px}
+.yes:hover{transform:translateY(-2px)}
+.maybe{background:transparent; color:var(--muted); border-color:var(--line); font-size:15px}
+.maybe.loose{position:fixed; z-index:3; margin:0; width:auto; min-width:180px}
+.hint{color:var(--muted); font-size:13.5px; min-height:20px; margin:14px 0 0; opacity:0; transition:opacity .25s}
+.hint.on{opacity:1}
+.times{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:4px}
+.time{background:var(--warm-soft); border:1px solid rgba(245,181,83,.35); color:var(--fg); font-size:17px; font-variant-numeric:tabular-nums}
+.time:hover{background:rgba(245,181,83,.26)}
+.time.wide{grid-column:1 / -1; background:transparent; border-color:var(--line); color:var(--muted); font-size:15px}
+.final .big{font-family:var(--display); font-weight:600; font-size:clamp(30px,10vw,44px); margin:6px 0 8px; color:var(--warm); font-variant-numeric:tabular-nums}
+.custom{display:flex; gap:10px; margin-top:10px}
+.custom input{flex:1; min-width:0; font:inherit; font-size:17px; text-align:center; color:var(--fg); background:rgba(255,255,255,.05); border:1px solid var(--line); border-radius:14px; padding:14px 12px}
+.custom button{flex:none; background:var(--warm); color:#1A1206}
+@media (prefers-reduced-motion:reduce){button{transition:none}}
+</style>
+</head>
+<body>
+<canvas id="snow" aria-hidden="true"></canvas>
+<div class="card">
+  <section id="s1">
+    <div class="moon" aria-hidden="true">🌙</div>
+    <h1>Погуляем?</h1>
+    <p class="sub">Вечером играем в Mortal Kombat.</p>
+    <div class="btns">
+      <button class="yes" id="yes" type="button">Да</button>
+      <button class="maybe" id="maybe" type="button">Я подумаю</button>
+    </div>
+    <p class="hint" id="hint"></p>
+  </section>
+  <section id="s2" hidden>
+    <div class="moon" aria-hidden="true">✨</div>
+    <h1>Отлично</h1>
+    <p class="sub">Во сколько сегодня?</p>
+    <div class="times">
+      <button class="time" type="button" data-t="17:00">17:00</button>
+      <button class="time" type="button" data-t="18:00">18:00</button>
+      <button class="time" type="button" data-t="19:00">19:00</button>
+      <button class="time" type="button" data-t="20:00">20:00</button>
+      <button class="time wide" id="other" type="button">Другое время</button>
+    </div>
+    <div class="custom" id="customBox" hidden>
+      <input id="customTime" type="time" aria-label="Своё время">
+      <button type="button" id="customOk">Готово</button>
+    </div>
+  </section>
+  <section id="s3" class="final" hidden>
+    <h1>Договорились</h1>
+    <p class="big" id="chosen">19:00</p>
+    <p class="sub">Сегодня. Я напишу, как выйду.</p>
+  </section>
+</div>
+<script>
+(function(){
+  var c=document.getElementById('snow'), ctx=c.getContext('2d');
+  var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var w,h,flakes=[];
+  function size(){
+    var dpr=Math.min(window.devicePixelRatio||1,2);
+    w=c.clientWidth; h=c.clientHeight;
+    c.width=w*dpr; c.height=h*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+    var n=Math.round(Math.min(90,w/9)); flakes=[];
+    for(var i=0;i<n;i++) flakes.push({x:Math.random()*w,y:Math.random()*h,r:0.8+Math.random()*2.1,s:0.25+Math.random()*0.75,d:Math.random()*Math.PI*2});
+  }
+  function draw(){
+    ctx.clearRect(0,0,w,h);
+    for(var i=0;i<flakes.length;i++){
+      var f=flakes[i];
+      ctx.beginPath(); ctx.arc(f.x,f.y,f.r,0,Math.PI*2);
+      ctx.fillStyle='rgba(255,255,255,'+(0.25+f.r/7)+')'; ctx.fill();
+      if(!reduce){
+        f.y+=f.s; f.d+=0.01; f.x+=Math.sin(f.d)*0.35;
+        if(f.y>h+4){f.y=-4; f.x=Math.random()*w;}
+        if(f.x<-4) f.x=w+4; else if(f.x>w+4) f.x=-4;
+      }
+    }
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize',size); size(); draw();
+})();
+var maybe=document.getElementById('maybe'), hint=document.getElementById('hint');
+var lines=['Ну подумай ещё раз','Кнопка так себе работает, да?','Она не хочет, чтобы ты думала','Соглашайся, я уже выбрал персонажа','Серьёзно, попробуй другую'];
+var runs=0;
+function flee(e){
+  if(e) e.preventDefault();
+  var r=maybe.getBoundingClientRect();
+  if(!maybe.classList.contains('loose')){ maybe.style.width=r.width+'px'; maybe.classList.add('loose'); }
+  var pad=12;
+  var maxX=Math.max(pad, window.innerWidth-r.width-pad);
+  var maxY=Math.max(pad, window.innerHeight-r.height-pad);
+  var x,y,t=0;
+  do{ x=pad+Math.random()*(maxX-pad); y=pad+Math.random()*(maxY-pad); t++; }
+  while(t<12 && Math.hypot(x-r.left,y-r.top)<140);
+  maybe.style.left=Math.round(x)+'px'; maybe.style.top=Math.round(y)+'px';
+  hint.textContent=lines[Math.min(runs,lines.length-1)]; hint.classList.add('on'); runs++;
+}
+['pointerenter','pointerdown','touchstart','focus'].forEach(function(ev){ maybe.addEventListener(ev,flee,{passive:false}); });
+maybe.addEventListener('click',function(e){ e.preventDefault(); flee(e); });
+var s1=document.getElementById('s1'), s2=document.getElementById('s2'), s3=document.getElementById('s3');
+function show(a,b){ a.hidden=true; b.hidden=false; }
+document.getElementById('yes').addEventListener('click',function(){ maybe.hidden=true; show(s1,s2); });
+function pick(t){ document.getElementById('chosen').textContent=t; show(s2,s3); }
+Array.prototype.forEach.call(document.querySelectorAll('.time[data-t]'),function(b){ b.addEventListener('click',function(){ pick(b.dataset.t); }); });
+document.getElementById('other').addEventListener('click',function(){ document.getElementById('customBox').hidden=false; document.getElementById('customTime').focus(); });
+document.getElementById('customOk').addEventListener('click',function(){ var v=document.getElementById('customTime').value; if(v) pick(v); });
+</script>
+</body>
+</html>
